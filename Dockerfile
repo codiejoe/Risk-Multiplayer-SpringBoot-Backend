@@ -1,8 +1,12 @@
-FROM maven:3.9.9-eclipse-temurin-24-alpine as build
-COPY . .
+FROM maven:3.9.9-eclipse-temurin-21-alpine AS build
+WORKDIR /app
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+COPY src ./src
 RUN mvn clean package -DskipTests
 
-FROM openjdk:21-jdk
-COPY --from=build /target/*.jar risk.jar
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+COPY --from=build /app/target/*.jar risk.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/risk.jar"]
+ENTRYPOINT ["java", "-jar", "risk.jar"]
